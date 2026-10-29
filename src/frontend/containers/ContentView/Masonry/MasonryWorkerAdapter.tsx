@@ -3,6 +3,7 @@ import { runInAction } from 'mobx';
 import { ClientFile } from '../../../entities/File';
 // Force Webpack to include worker and WASM file in the build folder!
 import { MasonryType, MasonryWorker, default as init } from 'wasm/packages/masonry';
+import { JsMasonry } from './JsMasonry';
 import { ITransform, Layouter } from './layout-helpers';
 
 export interface MasonryOptions {
@@ -20,8 +21,15 @@ const defaultOpts: MasonryOptions = {
 export class MasonryWorkerAdapter implements Layouter {
   private worker?: MasonryWorker;
   private memory?: WebAssembly.Memory;
+  /** Used when the renderer is not cross-origin isolated, so the wasm worker cannot start. */
+  private fallback?: JsMasonry;
+  private dimensions: [number, number][] = [];
 
   private prevNumImgs: number = 0;
+
+  private get needsFallback(): boolean {
+    return typeof self !== 'undefined' && self.crossOriginIsolated === false;
+  }
 
   async initialize(numItems: number) {
     this.prevNumImgs = numItems;
@@ -29,16 +37,35 @@ export class MasonryWorkerAdapter implements Layouter {
     if (this.memory !== undefined && this.worker !== undefined) {
       return;
     }
+    if (this.fallback !== undefined) {
+      this.fallback.resize(numItems);
+      return;
+    }
 
-    console.debug('initializing masonry worker...');
-    const wasm = await init();
-    this.memory = wasm.memory;
+    if (this.needsFallback) {
+      console.debug('masonry: no cross-origin isolation, using JS layout fallback');
+      this.fallback = new JsMasonry(numItems);
+      return;
+    }
 
-    const worker = new Worker(new URL('wasm/packages/masonry/worker.js', import.meta.url), {
-      type: 'module',
-    });
-    worker.postMessage(this.memory);
-    this.worker = new MasonryWorker(numItems);
+    try {
+      console.debug('initializing masonry worker...');
+      const wasm = await init();
+      this.memory = wasm.memory;
+
+      const worker = new Worker(new URL('wasm/packages/masonry/worker.js', import.meta.url), {
+        type: 'module',
+      });
+      worker.postMessage(this.memory);
+      this.worker = new MasonryWorker(numItems);
+    } catch (err) {
+      // SharedArrayBuffer transfer needs isolation; keep the gallery working regardless.
+      console.error('Could not start the masonry worker, falling back to JS layout', err);
+      this.memory = undefined;
+      this.worker = undefined;
+      this.fallback = new JsMasonry(numItems);
+      this.dimensions.forEach(([w, h], i) => this.fallback!.setDimension(i, w, h));
+    }
   }
 
   async compute(
@@ -47,6 +74,18 @@ export class MasonryWorkerAdapter implements Layouter {
     containerWidth: number,
     opts: Partial<MasonryOptions>,
   ): Promise<number | undefined> {
+    if (this.fallback !== undefined) {
+      this.fallback.resize(numImgs);
+      this.dimensions = [];
+      for (let i = 0; i < imgs.length; i++) {
+        this.dimensions[i] = [imgs[i].width, imgs[i].height];
+        this.fallback.setDimension(i, imgs[i].width, imgs[i].height);
+      }
+      this.fallback.setThumbnailSize(opts.thumbSize || defaultOpts.thumbSize);
+      this.fallback.setPadding(opts.padding ?? defaultOpts.padding);
+      return this.fallback.compute(containerWidth, opts.type ?? defaultOpts.type);
+    }
+
     const worker = this.worker;
     if (worker === undefined) {
       return Promise.reject('Worker is uninitialized.');
@@ -76,6 +115,11 @@ export class MasonryWorkerAdapter implements Layouter {
     containerWidth: number,
     opts: Partial<MasonryOptions>,
   ): Promise<number | undefined> {
+    if (this.fallback !== undefined) {
+      this.fallback.setThumbnailSize(opts.thumbSize || defaultOpts.thumbSize);
+      this.fallback.setPadding(opts.padding ?? defaultOpts.padding);
+      return this.fallback.compute(containerWidth, opts.type ?? defaultOpts.type);
+    }
     if (this.worker === undefined) {
       return Promise.reject('Worker is uninitialized.');
     }
@@ -90,6 +134,9 @@ export class MasonryWorkerAdapter implements Layouter {
 
   // This method will be available in the custom VirtualizedRenderer component as layout.getItemLayout
   getTransform(index: number): ITransform {
+    if (this.fallback !== undefined) {
+      return this.fallback.getTransform(index);
+    }
     if (this.worker === undefined || this.memory === undefined) {
       throw new Error('Worker is uninitialized.');
     }

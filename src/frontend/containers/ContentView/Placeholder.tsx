@@ -182,9 +182,9 @@ const BugReport = () => {
 };
 
 interface IContentPlaceholder {
-  icon: JSX.Element;
+  icon: React.ReactNode;
   title: string;
-  children: React.ReactNode | React.ReactNodeArray;
+  children: React.ReactNode | React.ReactNode;
 }
 
 const ContentPlaceholder = (props: IContentPlaceholder) => {

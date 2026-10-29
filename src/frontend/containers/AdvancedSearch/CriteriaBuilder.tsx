@@ -8,7 +8,7 @@ import { QueryDispatch } from './QueryEditor';
 import { defaultQuery, generateCriteriaId } from './data';
 
 export interface QueryBuilderProps {
-  keySelector: RefObject<HTMLSelectElement>;
+  keySelector: RefObject<HTMLSelectElement | null>;
   dispatch: QueryDispatch;
 }
 

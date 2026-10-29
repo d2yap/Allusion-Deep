@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import React, { useCallback, useState } from 'react';
-import { RendererMessenger } from 'src/ipc/renderer';
+import React from 'react';
 import { Toggle } from 'widgets';
 import { useStore } from '../../contexts/StoreContext';
 
@@ -10,11 +9,6 @@ export const StartupBehavior = observer(() => {
   //const [isAutoUpdateEnabled, setAutoUpdateEnabled] = useState(
   //  RendererMessenger.isCheckUpdatesOnStartupEnabled,
   //);
-
-  const toggleAutoUpdate = useCallback(() => {
-    RendererMessenger.toggleCheckUpdatesOnStartup();
-    //setAutoUpdateEnabled((isOn) => !isOn);
-  }, []);
 
   return (
     <div className="vstack">

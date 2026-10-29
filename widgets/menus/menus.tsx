@@ -16,7 +16,7 @@ export type MenuProps = {
   labelledby?: string;
 };
 
-export type MenuChildren = MenuChild | MenuChild[] | React.ReactFragment;
+export type MenuChildren = MenuChild | MenuChild[] | React.ReactNode;
 
 export type MenuChild =
   | React.ReactElement<MenuCheckboxItemProps>
@@ -46,7 +46,7 @@ export const Menu = forwardRef(function Menu(
 });
 
 export type MenuSubItemProps = {
-  icon?: JSX.Element;
+  icon?: React.ReactNode;
   text: string;
   disabled?: boolean;
   children: React.ReactNode;
@@ -86,7 +86,6 @@ export const MenuSubItem = ({ text, icon, disabled, children }: MenuSubItemProps
       // Returns focus to the anchor element.
       (e.currentTarget.firstElementChild as HTMLElement).focus();
     } else if (!disabled && (e.key === 'ArrowRight' || e.key === 'Enter')) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const first: HTMLElement | null =
         e.currentTarget.lastElementChild!.querySelector('[role^="menuitem"]');
       if (first !== null) {
@@ -200,7 +199,7 @@ function handleMenuKeyDown(event: React.KeyboardEvent) {
       listItem.focus();
     } else {
       // FIXME: It's not performant but a context menu is usually shorter than a `Tree`.
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
       const last: NodeListOf<HTMLElement> =
         event.currentTarget.querySelectorAll('[role^="menuitem"]');
       if (last.length > 0) {
@@ -231,7 +230,6 @@ function handleMenuKeyDown(event: React.KeyboardEvent) {
       // empty or if unavaible just become disabled.
       listItem.focus();
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const first: HTMLElement | null = event.currentTarget.querySelector('[role^="menuitem"]');
       if (first !== null) {
         event.stopPropagation();

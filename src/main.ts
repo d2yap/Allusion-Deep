@@ -7,7 +7,6 @@ import {
   nativeImage,
   nativeTheme,
   screen,
-  session,
   shell,
   Rectangle,
   Tray,
@@ -32,6 +31,7 @@ import {
 } from './ipc/messages';
 import { spawn } from 'child_process';
 import fs from 'fs';
+import { TaggerWorker } from './main-deepdanbooru-worker';
 
 // TODO: change this when running in portable mode, see portable-improvements branch
 const basePath = app.getPath('userData');
@@ -40,17 +40,30 @@ const preferencesFilePath = path.join(basePath, 'preferences.json');
 const windowStateFilePath = path.join(basePath, 'windowState.json');
 const deepDanbooruConfigPath = path.join(basePath, 'deepdanbooru.json');
 
+// Persistent tagger process: keeps the ONNX model loaded between images (huge speedup for bulk tagging)
+const taggerWorker = new TaggerWorker();
+
+app.on('will-quit', () => {
+  taggerWorker.stop();
+});
+
 function readDeepDanbooruConfig() {
   try {
     const raw = fs.readFileSync(deepDanbooruConfigPath, 'utf8');
     return JSON.parse(raw);
   } catch (e) {
-    // If no explicit config, but a bundled WD14 project exists under resources, prefer that
+    // If no explicit config, but a bundled WD14 project exists under resources, prefer that.
+    // Packaged builds put tagger.py in resources/ (see extraResources in package.json).
     try {
-      const defaultProject = path.join(__dirname, '..', 'resources', 'wd14');
-      const modelsDir = path.join(defaultProject, 'models');
-      if (fs.existsSync(defaultProject) && fs.existsSync(modelsDir)) {
-        return { projectPath: defaultProject };
+      const projects = [
+        path.join(process.resourcesPath || '', 'wd14'),
+        path.join(process.resourcesPath || '', 'resources', 'wd14'),
+        path.join(__dirname, '..', 'resources', 'wd14'),
+      ];
+      for (const defaultProject of projects) {
+        if (fs.existsSync(path.join(defaultProject, 'models'))) {
+          return { projectPath: defaultProject };
+        }
       }
     } catch (err) {
       // fallthrough
@@ -128,19 +141,12 @@ let tray: Tray | null = null;
 let clipServer: ClipServer | null = null;
 
 function initialize() {
-  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    if (details.responseHeaders === undefined) {
-      callback({});
-    } else {
-      callback({
-        responseHeaders: {
-          ...details.responseHeaders,
-          'Cross-Origin-Opener-Policy': ['same-origin'],
-          'Cross-Origin-Embedder-Policy': ['require-corp'],
-        },
-      });
-    }
-  });
+  // NOTE: COOP/COEP are deliberately not set. Under Electron's newer Chromium the
+  // `require-corp` policy rejects every worker and lazily loaded chunk served from
+  // `file://` (net::ERR_BLOCKED_BY_RESPONSE), which stalled startup on the splash screen
+  // and stopped thumbnails from ever being generated. It also never actually cross-origin
+  // isolated the renderer (`self.crossOriginIsolated` stayed false), so it bought nothing.
+  // The masonry layout falls back to a JS implementation when isolation is unavailable.
 
   createWindow();
   createPreviewWindow();
@@ -216,6 +222,8 @@ function createWindow() {
     bounds.y = targetDisplay.bounds.y + bounds.height / 2;
 
     return {
+      // Popups request 'foreground-tab'; that disposition ignores `allow` in newer Electron,
+      // which manifests as window.open() returning null. Force a popup-style window instead.
       action: 'allow',
       overrideBrowserWindowOptions: {
         ...bounds,
@@ -230,6 +238,9 @@ function createWindow() {
     };
   });
 
+  // window.open() from the renderer arrives as a 'foreground-tab' disposition, which newer
+  // Chromium routes to the tab strip instead of honoring the handler above. Intercept these
+  // popups explicitly so the Settings/Help/About windows still open as real windows.
   mainWindow.webContents.on('did-create-window', (childWindow) => {
     if (mainWindow === null || mainWindow.isDestroyed()) {
       return;
@@ -309,14 +320,15 @@ function createWindow() {
       {
         label: 'Refresh',
         accelerator: 'F5',
-        click: (_, win) => win?.webContents.reload(),
+        click: (_, win) => (win as BrowserWindow | undefined)?.webContents.reload(),
       },
       { role: 'toggleDevTools' },
       { type: 'separator' },
       {
         label: 'Actual Size',
         accelerator: 'CommandOrControl+0',
-        click: (_, browserWindow) => {
+        click: (_, baseWindow) => {
+          const browserWindow = baseWindow as BrowserWindow | undefined;
           if (browserWindow) {
             browserWindow.webContents.zoomFactor = 1;
           }
@@ -326,7 +338,8 @@ function createWindow() {
         label: 'Zoom In',
         // TODO: Fix by using custom solution...
         accelerator: 'CommandOrControl+=',
-        click: (_, browserWindow) => {
+        click: (_, baseWindow) => {
+          const browserWindow = baseWindow as BrowserWindow | undefined;
           if (browserWindow !== undefined) {
             browserWindow.webContents.setZoomFactor(
               Math.min(browserWindow.webContents.zoomFactor + 0.1, MAX_ZOOM_FACTOR),
@@ -337,7 +350,8 @@ function createWindow() {
       {
         label: 'Zoom Out',
         accelerator: 'CommandOrControl+-',
-        click: (_, browserWindow) => {
+        click: (_, baseWindow) => {
+          const browserWindow = baseWindow as BrowserWindow | undefined;
           if (browserWindow !== undefined) {
             browserWindow.webContents.setZoomFactor(
               Math.max(browserWindow.webContents.zoomFactor - 0.1, MIN_ZOOM_FACTOR),
@@ -874,6 +888,10 @@ ipcMain.handle('deepdanbooru:set-config', async (_ev, partialCfg: Record<string,
     const current = readDeepDanbooruConfig();
     const updated = { ...current, ...partialCfg };
     writeDeepDanbooruConfig(updated);
+    // A different model or tag list needs a new Python process
+    if (('modelPath' in partialCfg || 'tagListPath' in partialCfg) && taggerWorker.isRunning) {
+      taggerWorker.restart();
+    }
     return updated;
   } catch (e) {
     console.error('Could not set DeepDanbooru config', e);
@@ -890,7 +908,10 @@ ipcMain.on(DEEPDANBOORU_PREDICT, async (e, msg: DeepDanbooruPredictMessage) => {
     const vectorExts = ['.svg', '.svgz', '.eps', '.ai', '.pdf'];
     if (vectorExts.includes(ext)) {
       console.info('Image is a vector/unsupported format, returning Untagged:', msg.imagePath);
-      e.sender.send(DEEPDANBOORU_PREDICT_REPLY, { tags: [{ tag: 'Untagged', score: 1.0 }] });
+      e.sender.send(DEEPDANBOORU_PREDICT_REPLY, {
+        tags: [{ tag: 'Untagged', score: 1.0 }],
+        requestId: msg.requestId,
+      });
       return;
     }
   } catch (err) {
@@ -924,6 +945,33 @@ ipcMain.on(DEEPDANBOORU_PREDICT, async (e, msg: DeepDanbooruPredictMessage) => {
     }
   }
 
+  const requestId = msg.requestId;
+  try {
+    const model = cfg && cfg.modelPath ? String(cfg.modelPath) : '';
+    const tagList = cfg && cfg.tagListPath ? String(cfg.tagListPath) : '';
+    if (!model || !tagList) {
+      e.sender.send(DEEPDANBOORU_PREDICT_REPLY, {
+        tags: [],
+        error: 'Set a WD14 model and tag list in Settings before auto-tagging.',
+        requestId,
+      });
+      return;
+    }
+    const device = await taggerWorker.ensureRunning(scriptPath, model, tagList);
+    const results = await taggerWorker.runBatch([msg.imagePath], msg.threshold ?? 0.5);
+    const result = results[msg.imagePath];
+    e.sender.send(DEEPDANBOORU_PREDICT_REPLY, {
+      tags: result.tags,
+      scores: result.scores,
+      error: result.error,
+      device: device.device,
+      requestId,
+    });
+    return;
+  } catch (err) {
+    console.warn('Persistent tagger worker unavailable, using one-shot helper', err);
+  }
+
   try {
     console.info('Spawning DeepDanbooru helper', { pythonPath, scriptPath, args });
     const proc = spawn(pythonPath, [scriptPath, ...args]);
@@ -944,21 +992,27 @@ ipcMain.on(DEEPDANBOORU_PREDICT, async (e, msg: DeepDanbooruPredictMessage) => {
         e.sender.send(DEEPDANBOORU_PREDICT_REPLY, {
           tags: [],
           error: stderr || `Python exited with code ${code}`,
+          requestId: msg.requestId,
         });
         return;
       }
       try {
         const parsed = JSON.parse(stdout);
-        e.sender.send(DEEPDANBOORU_PREDICT_REPLY, parsed);
+        e.sender.send(DEEPDANBOORU_PREDICT_REPLY, { ...parsed, requestId: msg.requestId });
       } catch (err) {
         e.sender.send(DEEPDANBOORU_PREDICT_REPLY, {
           tags: [],
           error: `Could not parse output: ${err} - ${stderr}`,
+          requestId: msg.requestId,
         });
       }
     });
   } catch (err: any) {
-    e.sender.send(DEEPDANBOORU_PREDICT_REPLY, { tags: [], error: String(err) });
+    e.sender.send(DEEPDANBOORU_PREDICT_REPLY, {
+      tags: [],
+      error: String(err),
+      requestId: msg.requestId,
+    });
   }
 });
 
@@ -1049,7 +1103,7 @@ function forceRelaunch() {
 function getVersion(): string {
   if (IS_DEV) {
     // Weird quirk: it returns the Electron version in dev mode
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     return require('../package.json').version;
   } else {
     return app.getVersion();

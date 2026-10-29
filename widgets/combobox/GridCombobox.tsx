@@ -219,7 +219,6 @@ export const GridCombobox = ({
     }
     const row = e.target.closest('[role="row"][aria-rowindex]') as HTMLElement | null;
     if (row !== null) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const optionIndex = parseInt(row.getAttribute('aria-rowindex')!) - 1;
 
       let options;

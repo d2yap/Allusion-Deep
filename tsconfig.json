@@ -1,25 +1,55 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
     "paths": {
-      "widgets/*": ["widgets/*"],
-      "resources/*": ["resources/*"],
-      "src/*": ["src/*"]
+      "widgets/*": [
+        "./widgets/*"
+      ],
+      "resources/*": [
+        "./resources/*"
+      ],
+      "src/*": [
+        "./src/*"
+      ],
+      "*": [
+        "./*"
+      ]
     },
-    "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
     "module": "ESNext",
     "sourceMap": true,
     "outDir": "dist",
     "target": "ES2022",
-    "lib": ["dom", "esnext", "webworker"],
-    "moduleResolution": "node",
+    "lib": [
+      "dom",
+      "esnext",
+      "webworker"
+    ],
+    "moduleResolution": "bundler",
     "experimentalDecorators": true,
     "useUnknownInCatchVariables": false,
-    "strict": true, 
-    "isolatedModules": true
+    "strict": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "types": [
+      "node",
+      "jest"
+    ],
+    "rootDir": "."
   },
-  "include": ["widgets/**/*", "src/**/*", "custom.d.ts", "wasm/**/*", "common/**/*", "tests/**/*"],
-  "exclude": ["**/node_modules", "**/.*/*", "dist", "resources", "build"]
+  "include": [
+    "widgets/**/*",
+    "src/**/*",
+    "custom.d.ts",
+    "wasm/**/*",
+    "common/**/*",
+    "tests/**/*"
+  ],
+  "exclude": [
+    "**/node_modules",
+    "**/.*/*",
+    "dist",
+    "resources",
+    "build"
+  ]
 }

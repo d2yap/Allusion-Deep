@@ -46,7 +46,7 @@ import fse from 'fs-extra';
 import { action, makeObservable, observable, runInAction } from 'mobx';
 import exiftool from 'node-exiftool';
 import { IS_WIN } from './process';
-import { getExtraResourcePath } from './fs';
+import { resolveExtraResource } from './fs';
 import path from 'path';
 import os from 'os';
 import fs from 'fs';
@@ -58,7 +58,7 @@ const exiftoolRunnable = IS_WIN ? 'exiftool.exe' : 'exiftool.pl';
 // common locations (project resources, process.cwd(), etc.) so that in dev mode
 // or when running from various working directories the binary can still be found.
 const candidatePaths = [
-  getExtraResourcePath(`exiftool/${exiftoolRunnable}`),
+  resolveExtraResource(`exiftool/${exiftoolRunnable}`),
   // common dev path: resources folder in repo root
   path.resolve(process.cwd(), 'resources', 'exiftool', exiftoolRunnable),
   // a relative location from this compiled file

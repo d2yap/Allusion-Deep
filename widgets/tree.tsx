@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React, { CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 // --- Helper function for tree items ---
@@ -465,8 +464,7 @@ export interface ITreeLabel {
 }
 
 export type TreeLabel =
-  | React.FC<{ nodeData: any; treeData: any; level: number; size: number; pos: number }>
-  | string;
+  React.FC<{ nodeData: any; treeData: any; level: number; size: number; pos: number }> | string;
 
 /** Presentation for branch nodes */
 export interface ITreeItem extends INodeData {

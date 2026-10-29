@@ -6,7 +6,7 @@ import 'widgets/utility/utility.scss';
 export interface DialogProps {
   open: boolean;
   title: string;
-  icon: JSX.Element;
+  icon: React.ReactNode;
   describedby?: string;
   children: React.ReactNode;
   onCancel: () => void;

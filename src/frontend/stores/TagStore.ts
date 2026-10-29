@@ -171,7 +171,6 @@ class TagStore {
 
     // Set parent and add sub tags
     for (const { id, subTags } of backendTags) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const tag = this.tagGraph.get(id)!;
 
       for (const id of subTags) {

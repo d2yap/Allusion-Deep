@@ -153,8 +153,8 @@ export function useCommandHandler(
     const showContextMenu = (
       x: number,
       y: number,
-      fileMenu: JSX.Element,
-      externalMenu: JSX.Element,
+      fileMenu: React.ReactNode,
+      externalMenu: React.ReactNode,
     ) => {
       show(
         x,

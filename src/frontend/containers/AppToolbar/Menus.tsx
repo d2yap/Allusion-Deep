@@ -49,7 +49,7 @@ export const ViewCommand = () => {
 
 const sortMenuData: Array<{
   prop: OrderBy<FileDTO>;
-  icon: JSX.Element;
+  icon: React.ReactNode;
   text: string;
   hideDirection?: boolean;
 }> = [

@@ -69,3 +69,19 @@ export function getExtraResourcePath(resourcePath: string): string {
   const relativeResourcesPath = (IS_DEV ? '../' : '../../') + 'resources';
   return path.resolve(__dirname, relativeResourcesPath, resourcePath);
 }
+
+/**
+ * Resolves a path under `extraResources` (see package.json). Works unpackaged
+ * (`resources/` next to the build) and packaged (`process.resourcesPath`).
+ */
+export function resolveExtraResource(resourceName: string): string {
+  const candidates: string[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const resourcesPath = (process as any).resourcesPath as string | undefined;
+  if (resourcesPath) {
+    candidates.push(path.join(resourcesPath, resourceName));
+    candidates.push(path.join(resourcesPath, 'resources', resourceName));
+  }
+  candidates.push(getExtraResourcePath(resourceName));
+  return candidates.find((candidate) => fse.existsSync(candidate)) ?? candidates[candidates.length - 1];
+}

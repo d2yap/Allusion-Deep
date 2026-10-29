@@ -4,6 +4,8 @@ import { initializeCanvas, byteArrayToBase64, readPsd } from 'ag-psd';
 
 import { expose } from 'comlink';
 
+self.postMessage({ diag: 'worker-module-loaded' });
+
 export class PsdReaderWorker {
   constructor() {
     initializeCanvas(this.createCanvas, this.createCanvasFromData);
@@ -37,7 +39,8 @@ export class PsdReaderWorker {
     // skipping thumbnail and layer images here so we don't have to clear and convert them all
     // before posting data back
     // TODO: look into using the skipThumbnail: false option for faster thumbnail extraction
-    const psd = readPsd(data, {
+    // Node's Buffer is backed by ArrayBufferLike, narrower than ag-psd's ArrayBuffer expectation
+    const psd = readPsd(data as unknown as ArrayBuffer, {
       skipLayerImageData: true,
       skipThumbnail: true,
       useImageData: true,

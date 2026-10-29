@@ -67,7 +67,6 @@ export default class ZoomPan extends React.Component<ZoomPanProps, ZoomPanState>
   }
 
   private get container(): HTMLDivElement {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.containerRef.current!;
   }
 
@@ -336,8 +335,7 @@ export default class ZoomPan extends React.Component<ZoomPanProps, ZoomPanState>
 
 type Updater = (
   updater:
-    | ((state: Readonly<ZoomPanState>, props: Readonly<ZoomPanProps>) => ZoomPanState)
-    | ZoomPanState,
+    ((state: Readonly<ZoomPanState>, props: Readonly<ZoomPanProps>) => ZoomPanState) | ZoomPanState,
 ) => void;
 
 //// ANIMATION
@@ -387,8 +385,8 @@ function getCorrectedTransform(
           overflowHeight * upperBoundFactor - overflowHeight,
         )
       : position === 'center'
-      ? (containerDimension[1] - imageDimension[1] * scale) / 2
-      : 0;
+        ? (containerDimension[1] - imageDimension[1] * scale) / 2
+        : 0;
 
   const left =
     overflowWidth > 0
@@ -398,8 +396,8 @@ function getCorrectedTransform(
           overflowWidth * upperBoundFactor - overflowWidth,
         )
       : position === 'center'
-      ? (containerDimension[0] - imageDimension[0] * scale) / 2
-      : 0;
+        ? (containerDimension[0] - imageDimension[0] * scale) / 2
+        : 0;
 
   const constrainedTransform = createTransform(top, left, scale);
 
@@ -443,7 +441,7 @@ function resetTransform(props: Readonly<ZoomPanProps>, setState: Updater) {
   const transform =
     props.transitionEnd !== undefined
       ? requestedTransform
-      : getCorrectedTransform(props, requestedTransform, 0.5) ?? requestedTransform;
+      : (getCorrectedTransform(props, requestedTransform, 0.5) ?? requestedTransform);
   return animateTransform(transform, ANIMATION_SPEED, setState);
 }
 

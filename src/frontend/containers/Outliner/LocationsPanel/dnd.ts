@@ -17,15 +17,20 @@ const ALLOWED_FILE_DROP_TYPES = IMG_EXTENSIONS.map((ext) => `image/${ext}`);
 export const isAcceptableType = (e: React.DragEvent) =>
   e.dataTransfer.types.some((type) => ALLOWED_DROP_TYPES.includes(type));
 
+/**
+ * Absolute path of a dropped file. The DOM `File.path` property was dropped from the spec and
+ * from TypeScript's DOM types, but Electron still populates it for real filesystem drops.
+ */
+const droppedFilePath = (file: File | string): string =>
+  typeof file === 'string' ? file : (file as File & { path?: string }).path || '';
+
 /** Returns the IDs of the files that match those in Allusion given dropData. Returns false if one or files has no matches */
 export const findDroppedFileMatches = action(
   (dropData: (File | string)[], fs: FileStore): ClientFile[] | false => {
-    const matches = dropData.map(
-      (file) =>
-        typeof file !== 'string' &&
-        file.path &&
-        fs.fileList.find((f) => f.absolutePath === file.path),
-    );
+    const matches = dropData.map((file) => {
+      const filePath = droppedFilePath(file);
+      return filePath ? fs.fileList.find((f) => f.absolutePath === filePath) : undefined;
+    });
     return matches.every((m): m is ClientFile => m instanceof ClientFile) ? matches : false;
   },
 );
@@ -66,10 +71,11 @@ export async function storeDroppedImage(dropData: (string | File)[], directory: 
 
     // Store file -> detected by watching the directory -> automatically imported
     if (dataItem instanceof File) {
-      const buffer = dataItem.path ? await fse.readFile(dataItem.path) : dataItem;
+      const filePath = droppedFilePath(dataItem);
+      const buffer = filePath ? await fse.readFile(filePath) : dataItem;
       fileData = {
         directory,
-        filenameWithExt: path.basename(dataItem.path),
+        filenameWithExt: path.basename(filePath),
         imgBase64: buffer.toString('base64'),
       };
     } else if (typeof dataItem === 'string') {

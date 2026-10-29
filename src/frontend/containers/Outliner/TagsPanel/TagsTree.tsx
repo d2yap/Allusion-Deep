@@ -454,9 +454,9 @@ const TagsTree = observer((props: Partial<MultiSplitPaneProps>) => {
   });
 
   /** The first item that is selected in a multi-selection */
-  const initialSelectionIndex = useRef<number>();
+  const initialSelectionIndex = useRef<number | undefined>(undefined);
   /** The last item that is selected in a multi-selection */
-  const lastSelectionIndex = useRef<number>();
+  const lastSelectionIndex = useRef<number | undefined>(undefined);
   // Handles selection via click event
   const select = useAction((e: React.MouseEvent, selectedTag: ClientTag) => {
     // Note: selection logic is copied from Gallery.tsx

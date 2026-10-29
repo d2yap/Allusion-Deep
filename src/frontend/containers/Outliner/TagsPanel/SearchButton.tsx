@@ -26,8 +26,8 @@ const SearchButton: React.FC<SearchButtonProps> = ({ onClick, isSearched }) => {
           ? IconSet.SEARCH_REMOVE
           : IconSet.SEARCH_ADD
         : isSearched
-        ? IconSet.SEARCH
-        : IconSet.SEARCH_ADD}
+          ? IconSet.SEARCH
+          : IconSet.SEARCH_ADD}
     </button>
   );
 };

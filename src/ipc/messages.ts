@@ -126,9 +126,14 @@ export type DeepDanbooruPredictMessage = {
   imagePath: string; // absolute path to image to predict
   projectPath: string; // path to DeepDanbooru project/model directory
   threshold?: number; // optional score threshold (0..1)
+  requestId?: number; // echoes back in the reply so concurrent requests can be matched
 };
 export const DEEPDANBOORU_PREDICT_REPLY = 'DEEPDANBOORU_PREDICT_REPLY';
 export type DeepDanbooruPredictReply = {
   tags: Array<{ tag: string; score: number }>;
+  // All general/character scores regardless of threshold, so callers can filter themselves
+  scores?: Record<string, number>;
   error?: string;
+  device?: string; // execution provider the worker ended up using, e.g. CUDAExecutionProvider
+  requestId?: number;
 };

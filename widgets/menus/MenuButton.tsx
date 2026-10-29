@@ -5,8 +5,8 @@ import { usePopover } from '../popovers/usePopover';
 
 export interface MenuButtonProps {
   id: string;
-  text: React.ReactText;
-  icon: JSX.Element;
+  text: string | number;
+  icon: React.ReactNode;
   isCollapsible?: boolean;
   tooltip?: string;
   menuID: string;

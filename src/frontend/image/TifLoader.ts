@@ -17,8 +17,12 @@ class TifLoader implements Loader {
    * Based on: https://github.com/photopea/UTIF.js/blob/master/UTIF.js#L1119
    * @param buffer Image buffer (e.g. from fse.readFile)
    */
-  decode(buffer: ArrayBuffer): Promise<ImageData> {
-    const ifds = UTIF.decode(buffer);
+  decode(buffer: Buffer): Promise<ImageData> {
+    const arrayBuffer = buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength,
+    ) as ArrayBuffer;
+    const ifds = UTIF.decode(arrayBuffer);
     const vsns = ifds[0].subIFD ? ifds.concat(ifds[0].subIFD as any) : ifds;
 
     let page = vsns[0];
@@ -38,10 +42,12 @@ class TifLoader implements Loader {
       }
     }
 
-    (UTIF.decodeImage as any)(buffer, page);
+    (UTIF.decodeImage as any)(arrayBuffer, page);
     const rgba = UTIF.toRGBA8(page);
     const { width, height } = page;
-    return Promise.resolve(new ImageData(new Uint8ClampedArray(rgba.buffer), width, height));
+    return Promise.resolve(
+      new ImageData(new Uint8ClampedArray(rgba.buffer as ArrayBuffer), width, height),
+    );
   }
 }
 

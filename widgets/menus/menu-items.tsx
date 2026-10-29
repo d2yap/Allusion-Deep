@@ -3,9 +3,9 @@ import React, { ForwardedRef, forwardRef, useCallback, useRef } from 'react';
 import { IconSet } from '../icons';
 
 export type MenuItemProps = {
-  icon?: JSX.Element;
+  icon?: React.ReactNode;
   text: string;
-  accelerator?: JSX.Element;
+  accelerator?: React.ReactNode;
   onClick: (event: React.MouseEvent<HTMLElement>) => void;
   disabled?: boolean;
 };
@@ -137,7 +137,7 @@ export const MenuSliderItem = ({
 export const MenuDivider = () => <li role="separator" className="menu-separator"></li>;
 
 export type MenuItemLinkProps = {
-  icon?: JSX.Element;
+  icon?: React.ReactNode;
   text: string;
   disabled?: boolean;
   expanded: boolean;

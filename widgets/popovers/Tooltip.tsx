@@ -16,14 +16,14 @@ export const TooltipLayer = ({ document }: { document: Document }) => {
   });
   const [isOpen, setIsOpen] = useState(false);
   const content = useRef<string>('');
-  const timerID = useRef<number>();
+  const timerID = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     reference(virtualElement.current);
 
     const handleShow = (e: MouseEvent | FocusEvent): HTMLElement | undefined => {
       const target = e.target as any;
-      if (target === null || !("dataset" in target) || !(target.dataset as any)['tooltip']) {
+      if (target === null || !('dataset' in target) || !(target.dataset as any)['tooltip']) {
         return;
       }
       content.current = target.dataset['tooltip'];

@@ -5,7 +5,7 @@ import path from 'path';
 import useLocalStorage from './useLocalStorage';
 import { RendererMessenger } from 'src/ipc/renderer';
 import { AppToaster } from '../components/Toaster';
-import { getExtraResourcePath } from '../../../common/fs';
+import { resolveExtraResource } from '../../../common/fs';
 
 type CustomThemeContextType = {
   theme: string;
@@ -26,7 +26,7 @@ const CustomThemeContext = React.createContext<CustomThemeContextType>({
 /** Copies preset themes from /resources/themes into the user's custom theme directory */
 async function copyPresets(themeDir: string) {
   try {
-    const presetDir = getExtraResourcePath('themes');
+    const presetDir = resolveExtraResource('themes');
     const files = await fse.readdir(presetDir);
     for (const file of files) {
       await fse.copy(`${presetDir}/${file}`, `${themeDir}/${file}`);

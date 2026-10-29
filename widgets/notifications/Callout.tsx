@@ -1,8 +1,8 @@
 import React from 'react';
 
 interface ICallout {
-  icon: JSX.Element;
-  header?: React.ReactText;
+  icon: React.ReactNode;
+  header?: string | number;
   children: React.ReactNode;
 }
 

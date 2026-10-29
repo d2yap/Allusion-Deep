@@ -6,7 +6,7 @@ import { Button } from 'widgets';
 import { Checkbox } from 'widgets/checkbox';
 import { IconSet } from 'widgets/icons';
 import { Dialog } from 'widgets/popovers';
-import Tree, { ITreeItem } from 'widgets/tree';
+import Tree, { ITreeItem, TreeLabel } from 'widgets/tree';
 import { useStore } from '../../../contexts/StoreContext';
 import { ClientLocation, ClientSubLocation } from '../../../entities/Location';
 import { useAutorun } from '../../../hooks/mobx';
@@ -45,7 +45,7 @@ const mapDirectory = (dir: ClientSubLocation): ITreeItem => ({
   isExpanded,
 });
 
-const LocationLabel = (nodeData: any, treeData: any) => (
+const LocationLabel: TreeLabel = ({ nodeData, treeData }) => (
   <Location nodeData={nodeData} treeData={treeData} />
 );
 

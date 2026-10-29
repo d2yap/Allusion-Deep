@@ -8,7 +8,7 @@ export interface ListboxProps {
 }
 
 export type ListboxChild = React.ReactElement<OptionProps>;
-export type ListboxChildren = ListboxChild | ListboxChild[] | React.ReactFragment;
+export type ListboxChildren = ListboxChild | ListboxChild[] | React.ReactNode;
 
 export const Listbox = forwardRef(function ListBox(
   props: ListboxProps,
@@ -24,7 +24,7 @@ export const Listbox = forwardRef(function ListBox(
 });
 
 export function useListboxFocus(
-  listRef: React.RefObject<HTMLUListElement>,
+  listRef: React.RefObject<HTMLUListElement | null>,
 ): [focus: number, handleInput: (event: React.KeyboardEvent) => void] {
   const focus = useRef(0);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -116,7 +116,7 @@ export interface OptionProps {
   value: string;
   selected?: boolean;
   /** The icon on the right side of the label because on the left is the checkmark already. */
-  icon?: JSX.Element;
+  icon?: React.ReactNode;
   onClick?: (event: React.MouseEvent<HTMLElement>) => void;
 }
 

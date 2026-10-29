@@ -84,8 +84,8 @@ export function createDragReorderHelper(id: string, dndType: string) {
       const relativeMovePos = targetClasses.contains('top')
         ? -1
         : targetClasses.contains('bottom')
-        ? 0
-        : 'middle'; // Not dragged at top or bottom, but in middle
+          ? 0
+          : 'middle'; // Not dragged at top or bottom, but in middle
 
       event.currentTarget.dataset[DnDAttribute.Target] = 'false';
       event.currentTarget.classList.remove('top');

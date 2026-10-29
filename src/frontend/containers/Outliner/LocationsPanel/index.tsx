@@ -245,8 +245,8 @@ const SubLocation = observer((props: { nodeData: ClientSubLocation; treeData: IT
       existingSearchCrit // toggle search
         ? uiStore.removeSearchCriteria(existingSearchCrit)
         : event.ctrlKey // otherwise add/replace depending on ctrl
-        ? uiStore.addSearchCriteria(pathCriteria(nodeData.path))
-        : uiStore.replaceSearchCriteria(pathCriteria(nodeData.path));
+          ? uiStore.addSearchCriteria(pathCriteria(nodeData.path))
+          : uiStore.replaceSearchCriteria(pathCriteria(nodeData.path));
     },
     [existingSearchCrit, nodeData.path, uiStore],
   );
@@ -316,8 +316,8 @@ const Location = observer(
         existingSearchCrit // toggle search
           ? uiStore.removeSearchCriteria(existingSearchCrit)
           : event.ctrlKey
-          ? uiStore.addSearchCriteria(pathCriteria(nodeData.path))
-          : uiStore.replaceSearchCriteria(pathCriteria(nodeData.path));
+            ? uiStore.addSearchCriteria(pathCriteria(nodeData.path))
+            : uiStore.replaceSearchCriteria(pathCriteria(nodeData.path));
       },
       [existingSearchCrit, nodeData.path, uiStore],
     );

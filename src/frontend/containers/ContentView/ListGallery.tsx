@@ -75,7 +75,6 @@ const ListGallery = observer(({ contentRect, select, lastSelectionIndex }: Galle
     if (isSlideMode) {
       ref.current?.scrollToItem(firstItem, 'smart');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSlideMode, firstItem]);
 
   useEffect(() => {
@@ -248,7 +247,7 @@ const SortableHeader = observer(({ title, sortKey, setColumnWidth }: SortableHea
 });
 
 function useHeaderResize(
-  header: React.RefObject<HTMLDivElement>,
+  header: React.RefObject<HTMLDivElement | null>,
   name: string,
   setColumnWidth: (name: string, value: number) => void,
 ) {

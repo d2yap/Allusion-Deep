@@ -51,8 +51,8 @@ Toolbar.displayName = 'Toolbar';
 
 interface ToolbarButtonProps {
   id?: string;
-  text: React.ReactText;
-  icon: JSX.Element;
+  text: string | number;
+  icon: React.ReactNode;
   onClick?: (event: React.MouseEvent) => void;
   isCollapsible?: boolean;
   tooltip?: string;

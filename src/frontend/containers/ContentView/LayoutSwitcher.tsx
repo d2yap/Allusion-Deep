@@ -25,9 +25,9 @@ const Layout = ({ contentRect }: LayoutProps) => {
   // Also take into account scrolling when dragging while selecting
 
   /** The first item that is selected in a multi-selection */
-  const initialSelectionIndex = useRef<number>();
+  const initialSelectionIndex = useRef<number | undefined>(undefined);
   /** The last item that is selected in a multi-selection */
-  const lastSelectionIndex = useRef<number>();
+  const lastSelectionIndex = useRef<number | undefined>(undefined);
 
   const handleFileSelect = useCallback(
     (selectedFile: ClientFile, toggleSelection: boolean, rangeSelection: boolean) => {

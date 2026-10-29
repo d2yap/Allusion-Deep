@@ -468,7 +468,11 @@ class LocationStore {
           if (reply.error) {
             return;
           }
-          const predictedTagNames = (reply.tags || [])
+          // The worker returns every candidate score so filtering happens here, not in Python
+          const candidates = reply.scores
+            ? Object.entries(reply.scores).map(([tag, score]) => ({ tag, score }))
+            : reply.tags || [];
+          const predictedTagNames = candidates
             .filter((t) => t.score >= DEFAULT_TAG_THRESHOLD)
             .map((t) => t.tag);
           if (predictedTagNames.length === 0) {

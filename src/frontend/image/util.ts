@@ -49,7 +49,7 @@ function dataToCanvas(data: ImageData): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = data.width;
   canvas.height = data.height;
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   const ctx = canvas.getContext('2d')!;
   ctx.putImageData(data, 0, 0);
   return canvas;
@@ -61,7 +61,7 @@ function getSampledCanvas(canvas: HTMLCanvasElement, targetSize: number): HTMLCa
   const sampledCanvas = document.createElement('canvas');
   sampledCanvas.width = scaledWidth;
   sampledCanvas.height = scaledHeight;
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   const sampledCtx = sampledCanvas.getContext('2d')!;
   sampledCtx.drawImage(canvas, sx, sy, swidth, sheight, 0, 0, scaledWidth, scaledHeight);
   return sampledCanvas;

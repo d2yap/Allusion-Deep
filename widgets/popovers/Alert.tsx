@@ -7,7 +7,7 @@ import 'widgets/utility/utility.scss';
 export interface AlertProps extends AlertActionsProps {
   open: boolean;
   title: React.ReactNode;
-  icon?: JSX.Element;
+  icon?: React.ReactNode;
   type?: Intent;
   children: React.ReactNode;
 }

@@ -3,7 +3,7 @@ import 'widgets/utility/utility.scss';
 
 type ButtonProps = {
   text: string | number;
-  icon?: JSX.Element;
+  icon?: React.ReactNode;
   onClick: (event: React.MouseEvent) => void;
   styling?: 'minimal' | 'outlined' | 'filled';
   disabled?: boolean;
@@ -45,7 +45,7 @@ const ButtonGroup = ({ children, align = 'left' }: ButtonGroupProps) => {
 
 interface IconButtonProps {
   text: string;
-  icon: JSX.Element;
+  icon: React.ReactNode;
   onClick: (event: React.MouseEvent) => void;
   className?: string;
   disabled?: boolean;

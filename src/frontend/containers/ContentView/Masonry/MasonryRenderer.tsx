@@ -11,9 +11,7 @@ import { MasonryWorkerAdapter } from './MasonryWorkerAdapter';
 import VirtualizedRenderer from './VirtualizedRenderer';
 
 type SupportedViewMethod =
-  | ViewMethod.MasonryVertical
-  | ViewMethod.MasonryHorizontal
-  | ViewMethod.Grid;
+  ViewMethod.MasonryVertical | ViewMethod.MasonryHorizontal | ViewMethod.Grid;
 
 const ViewMethodLayoutDict: Record<SupportedViewMethod, MasonryType> = {
   [ViewMethod.MasonryVertical]: MasonryType.Vertical,

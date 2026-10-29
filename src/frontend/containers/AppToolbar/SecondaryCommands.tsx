@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 
 import { IconSet, KeyCombo } from 'widgets';
 import { MenuButton, MenuItem } from 'widgets/menus';
-import { RendererMessenger } from 'src/ipc/renderer';
 import { useStore } from 'src/frontend/contexts/StoreContext';
 
 const SecondaryCommands = observer(() => {

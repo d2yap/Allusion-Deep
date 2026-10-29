@@ -12,13 +12,11 @@ import { generateThumbnailUsingWorker } from './ThumbnailGeneration';
 import TifLoader from './TifLoader';
 import { generateThumbnail, getBlob } from './util';
 
+/** Max time a specialized (tif/exr/psd) decoder may take to initialize. */
+const LOADER_INIT_TIMEOUT = 10000;
+
 type FormatHandlerType =
-  | 'web'
-  | 'tifLoader'
-  | 'exrLoader'
-  | 'psdLoader'
-  | 'extractEmbeddedThumbnailOnly'
-  | 'none';
+  'web' | 'tifLoader' | 'exrLoader' | 'psdLoader' | 'extractEmbeddedThumbnailOnly' | 'none';
 
 const FormatHandlers: Record<IMG_EXTENSIONS_TYPE, FormatHandlerType> = {
   gif: 'web',
@@ -58,7 +56,27 @@ class ImageLoader {
   }
 
   async init(): Promise<void> {
-    await Promise.all([this.tifLoader.init(), this.exrLoader.init(), this.psdLoader.init()]);
+    // These loaders are optional: EXR/PSD support needs WebAssembly/worker chunks that may be
+    // unavailable. A failing or hanging loader must never keep the app on the splash screen,
+    // because that also blocks thumbnail generation for every other file type.
+    const timeout = (promise: Promise<void>, loader: string) =>
+      Promise.race([
+        promise,
+        new Promise<void>((_, reject) =>
+          setTimeout(() => reject(new Error(`${loader} loader timed out`)), LOADER_INIT_TIMEOUT),
+        ),
+      ]);
+    const results = await Promise.allSettled([
+      timeout(this.tifLoader.init(), 'tif'),
+      timeout(this.exrLoader.init(), 'exr'),
+      timeout(this.psdLoader.init(), 'psd'),
+    ]);
+    const labels = ['tif', 'exr', 'psd'];
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        console.error(`Could not initialize the ${labels[index]} image loader`, result.reason);
+      }
+    });
   }
 
   needsThumbnail(file: FileDTO) {

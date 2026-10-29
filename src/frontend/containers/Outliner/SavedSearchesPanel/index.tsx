@@ -277,10 +277,10 @@ const SearchItemCriteria = observer(
         {nodeData.valueType === 'array'
           ? IconSet.TAG
           : nodeData.valueType === 'string'
-          ? IconSet.FILTER_NAME_DOWN
-          : nodeData.valueType === 'number'
-          ? IconSet.FILTER_FILTER_DOWN
-          : IconSet.FILTER_DATE}
+            ? IconSet.FILTER_NAME_DOWN
+            : nodeData.valueType === 'number'
+              ? IconSet.FILTER_FILTER_DOWN
+              : IconSet.FILTER_DATE}
         <div className="label-text" data-tooltip={label}>
           {label}
         </div>

@@ -51,7 +51,6 @@ const ResizableCollapse = ({
     }
     const newHeight = isCollapsed ? '' : `${height ? `${height}px` : ''}`;
     ref.current.style.height = newHeight;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCollapsed]);
 
   // Reset height when height is set to 0 (e.g. double clicking the header)

@@ -36,7 +36,7 @@ export default observer(Settings);
 
 type TabItem = {
   label: string;
-  content: () => JSX.Element;
+  content: () => React.ReactNode;
 };
 
 const Tabs = () => {
@@ -110,7 +110,7 @@ type TabProps = {
   id: number;
   isSelected: boolean;
   setSelection: (id: number) => void;
-  label: string | JSX.Element;
+  label: string | React.ReactNode;
 };
 
 const Tab = ({ id, isSelected, setSelection, label }: TabProps) => {

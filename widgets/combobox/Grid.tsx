@@ -8,7 +8,7 @@ export interface GridProps {
 }
 
 export type GridChild = React.ReactElement<RowProps>;
-export type GridChildren = GridChild | GridChild[] | React.ReactFragment;
+export type GridChildren = GridChild | GridChild[] | React.ReactNode;
 
 export const Grid = forwardRef(function Grid(props: GridProps, ref: ForwardedRef<HTMLDivElement>) {
   const { id, multiselectable, children } = props;
@@ -21,7 +21,7 @@ export const Grid = forwardRef(function Grid(props: GridProps, ref: ForwardedRef
 });
 
 export function useGridFocus(
-  gridRef: React.RefObject<HTMLDivElement>,
+  gridRef: React.RefObject<HTMLDivElement | null>,
 ): [focus: string | undefined, handleInput: (event: React.KeyboardEvent) => void] {
   const focus = useRef(0);
   const [activeIndex, setActiveIndex] = useState<string>();
@@ -113,7 +113,7 @@ export interface RowProps {
   value: string;
   selected?: boolean;
   /** The icon on the right side of the label because on the left is the checkmark already. */
-  icon?: JSX.Element;
+  icon?: React.ReactNode;
   onClick?: (event: React.MouseEvent<HTMLElement>) => void;
   children?: ReactElement<GridCellProps> | ReactElement<GridCellProps>[];
   tooltip?: string;

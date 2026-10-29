@@ -109,7 +109,7 @@ export const KeyCodes: IKeyCodeTable = {
   219: '[',
   220: '\\',
   221: ']',
-  // eslint-disable-next-line quotes
+
   222: "'",
 };
 export const Modifiers: IKeyCodeTable = {
@@ -157,7 +157,7 @@ export const ShiftKeys: IKeyMap = {
   '}': ']',
   '|': '\\',
   ':': ';',
-  // eslint-disable-next-line quotes
+
   '"': "'",
   '<': ',',
   '>': '.',
@@ -236,7 +236,6 @@ export const getKeyComboString = function (e: KeyboardEvent) {
   } else if (KeyCodes[which] != null) {
     keys.push(KeyCodes[which]);
   } else {
-    // eslint-disable-next-line id-blacklist
     keys.push(String.fromCharCode(which).toLowerCase());
   }
   // join keys with plusses
@@ -257,7 +256,6 @@ export const getKeyCombo = function (e: KeyboardEvent) {
   } else if (KeyCodes[which] != null) {
     key = KeyCodes[which];
   } else {
-    // eslint-disable-next-line id-blacklist
     key = String.fromCharCode(which).toLowerCase();
   }
   let modifiers = 0;

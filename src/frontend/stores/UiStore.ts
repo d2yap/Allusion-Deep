@@ -831,10 +831,10 @@ class UiStore {
         this.isThumbnailTagOverlayEnabled = Boolean(prefs.isThumbnailTagOverlayEnabled ?? true);
         this.isThumbnailFilenameOverlayEnabled = Boolean(
           prefs.isThumbnailFilenameOverlayEnabled ?? false,
-        ); // eslint-disable-line prettier/prettier
+        );
         this.isThumbnailResolutionOverlayEnabled = Boolean(
           prefs.isThumbnailResolutionOverlayEnabled ?? false,
-        ); // eslint-disable-line prettier/prettier
+        );
         this.isAutoTagOnImportEnabled = Boolean(prefs.isAutoTagOnImportEnabled ?? false);
         if (prefs.deepDanbooruModelPath) {
           this.deepDanbooruModelPath = prefs.deepDanbooruModelPath;
@@ -855,7 +855,7 @@ class UiStore {
             // BACKWARDS_COMPATIBILITY: searchCriteriaList used to be serialized to a string
             typeof prefs.searchCriteriaList === 'string'
               ? JSON.parse(prefs.searchCriteriaList ?? '[]')
-              : prefs.searchCriteriaList ?? [];
+              : (prefs.searchCriteriaList ?? []);
           const newCrits = serializedCriteriaList.map((c) =>
             ClientFileSearchCriteria.deserialize(c),
           );
@@ -877,9 +877,8 @@ class UiStore {
     // If no deepdanbooru paths were recovered from localStorage, ask main process for configured values
     (async () => {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const { ipcRenderer } = require('electron');
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         const cfg: any = await ipcRenderer.invoke('deepdanbooru:get-config');
         if (cfg) {
           if (!this.deepDanbooruModelPath && cfg.modelPath) {

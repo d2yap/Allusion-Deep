@@ -94,10 +94,10 @@ export abstract class ClientFileSearchCriteria implements IBaseSearchCriteria {
           arr.value.length <= 1
             ? arr.operator
             : arr.operator === 'contains'
-            ? 'containsRecursively'
-            : arr.operator === 'notContains'
-            ? 'containsNotRecursively'
-            : arr.operator;
+              ? 'containsRecursively'
+              : arr.operator === 'notContains'
+                ? 'containsNotRecursively'
+                : arr.operator;
         const value = arr.value[0];
         return new ClientTagSearchCriteria(arr.key, value, op);
       default:
