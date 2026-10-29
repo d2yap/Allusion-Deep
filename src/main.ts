@@ -222,8 +222,6 @@ function createWindow() {
     bounds.y = targetDisplay.bounds.y + bounds.height / 2;
 
     return {
-      // Popups request 'foreground-tab'; that disposition ignores `allow` in newer Electron,
-      // which manifests as window.open() returning null. Force a popup-style window instead.
       action: 'allow',
       overrideBrowserWindowOptions: {
         ...bounds,
@@ -234,6 +232,14 @@ function createWindow() {
         title: `${WINDOW_TITLES[frameName]} • Allusion+Deep`,
         frame: true,
         titleBarStyle: 'default',
+        //External window not supported error fixed through matching opener's webPreferences.
+        webPreferences: {
+          nodeIntegration: true,
+          nodeIntegrationInWorker: true,
+          nodeIntegrationInSubFrames: true,
+          contextIsolation: false,
+          sandbox: false,
+        },
       },
     };
   });
